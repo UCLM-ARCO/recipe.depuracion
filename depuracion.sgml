@@ -1,0 +1,942 @@
+<!DOCTYPE ARTICLE PUBLIC "-//OASIS//DTD DocBook V3.1//EN">
+<ARTICLE ID="default">
+  
+  <ARTHEADER>
+    
+    <TITLE>Depuración avanzada en GNU/Linux</TITLE> 
+
+    <AUTHOR>
+      <FIRSTNAME>ARCO</FIRSTNAME> 
+    </AUTHOR> 
+    
+    <ABSTRACT>
+      <PARA>
+	Breve descripción de las herramientas de depuración en
+	entornos GNU.
+      </PARA>
+    </ABSTRACT>
+
+    <REVHISTORY>      
+      <REVISION>
+	<REVNUMBER>1.0</REVNUMBER>
+	<DATE>23 / 04 / 2003</DATE> 
+	<AUTHORINITIALS>David Villa</AUTHORINITIALS>
+	<REVREMARK> Inicial.
+	</REVREMARK>
+      </REVISION>	
+    </REVHISTORY>
+  </ARTHEADER>
+
+
+  <section id="intro">
+    <title>Introducción</title>
+    <para>
+      GNU/Linux es sin ninguna duda el mejor entorno de desarrollo que
+      existe para cualquier programador, independientemente de su
+      capacitación o nivel técnico.
+    </para>
+
+    <para>
+      La gran cantidad y calidad de herramientas disponibles,
+      sustentadas por la comunidad del desarrolladores más activa del
+      planeta, constituye la mejor garantía de exito en cualquier tipo
+      de iniciativa. Tanto es así, que incluso empresas que fabrican
+      software para otras plataformas y sistemas operativos, utilizan
+      sistemas GNU en el proceso de desarrollo y pruebas.
+    </para>
+
+    <para>
+      Junto al compilador <command>gcc</command> y al depurador
+      <command>gdb</command>, herramientas de depuración tales como
+      <command>gprof</command>, <command>memprof</command>,
+      <command>strace</command>, etc son una excelente ayuda a la hora
+      de construir programas con calidad y eficiencia.
+    </para>
+
+    <para>
+      En este documento se aborda someramente la utilidad y
+      características principales de algunas de estas herramientas.
+    </para>
+
+    <para>
+      Se aconseja la lectura de <emphasis>GNU GDB</emphasis> (de esta
+      misma serie de documentos) o un conocimiento básico de
+      <command>gdb</command> como requisito para comprender mejor las
+      técnicas y herramientas de depuración que aquí se describen.
+  </section>
+
+  <section id="gcc">
+    <title>gcc</title>
+    <para>
+      El propio compilador puede ser una herramienta muy valiosa a la
+      hora de localizar errores. Las opciones más interesantes son:
+    </para>
+
+    <variablelist>
+      <varlistentry>
+	<term>
+	  <option>-Wall</option>
+	</term>
+	<listitem>
+	  <para>
+	    Informar de TODAS las advertencias. Una advertencia del
+	    compilador (<emphasis>warning</emphasis>) es siempre un
+	    error en podencia. Un programa correcto no debe provocar
+	    ninguna advertencia.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+	<term>
+	  <option>-O0</option>
+	</term>
+	<listitem>
+	  <para>
+	    Indica que no realice ningún tipo de optimización en el
+	    código. Sin embargo, consigue que el compilador haga más
+	    comprobaciones permitiendo con ello detectar más errores.
+	  </para>
+	</listitem>
+      </varlistentry>
+    </variablelist>
+  </section>
+
+  <section>
+    <title> ************ En construcción ************* </title>
+    <para>
+    </para>
+  </section>
+      
+
+
+<!--
+  <section id="static">
+    <title>Librerías estáticas</title>
+    <para>
+      Una  librería estática  no es  más que  un conjunto  de ficheros
+      objeto empaquetados en un único archivo. Para crear una librería
+      estática debemos seguir los siguientes pasos:
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    Codificar los módulos de la forma habitual.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Obtener los ficheros objeto utilizando el compilador.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Empaquetar los ficheros objeto que integran la librería
+	    por medio de la utilidad <command>ar</command>.
+	  </para>
+	</listitem>
+      </itemizedlist>
+      Por convenio, los nombres de todas las librerías estáticas
+      comienzan por <filename>lib</filename> y tienen
+      <filename>.a</filename> por extensión.  Aunque estas
+      restricciones no son obligatorias, es poco recomendable
+      saltárselas pues el entorno ofrece facilidades de uso si se
+      siguen dichas normas.
+    </para>
+
+    <section>
+      <title>Creación de una librería estática</title> 
+      <para>
+	Supongamos que disponemos de los ficheros
+	<filename>fich1.c</filename> y <filename>fich2.c</filename> que
+	contienen el código de las funciones que deseamos incluir en
+	la librería <filename>libfich.a</filename>. Para obtener los
+	ficheros objeto compilamos como siempre:
+      </para>
+
+      <para>
+	<screen>
+   $ gcc -c -o fich1.o fich1.c 
+	</screen>
+      </para>
+
+      <para>
+	y
+      </para>
+
+      <para>
+	<screen>
+   $ gcc -c -o fich2.o fich2.c 
+	</screen>
+      </para>
+
+      <para>
+	A continuación empaquetamos los ficheros obtenidos con
+	<command>ar</command> (un empaquetador similar a
+	<command>tar</command>).
+      </para>
+
+      <para>
+	<screen>
+   $ ar rcs libfich.a fich1.o fich2.o
+	</screen>
+      </para>
+
+      <para>
+	El significado de las opciones que se le dan a <command>ar</command> es el
+	siguiente:
+      </para>
+
+
+    <table frame=none> <title></title>
+       <tgroup cols=2 align=left rowsep=30>
+	<colspec colwidth=1cm>
+
+	<tbody>
+	  <row>
+	    <entry><literal><command>s</command></literal></entry>
+	    <entry>construir un índice del contenido.</entry>
+	  </row>
+	  <row>
+	    <entry><literal><command>c</command></literal></entry>
+	    <entry>crear el paquete si no existe.</entry>
+	  </row>
+	  <row>
+	    <entry><literal><command>r</command></literal></entry>
+	    <entry>reemplazar los ficheros si ya existían en el paquete.</entry>
+	  </row>
+	</tbody>
+      </tgroup>
+     </table>
+
+      <para>
+	Otras opciones de ar que pueden resultar útiles son:
+      </para>
+
+      <table frame=none> <title></title>
+       <tgroup cols=2 align=left rowsep=30>
+	<colspec colwidth=1cm>
+
+	<tbody>
+	  <row>
+	    <entry><literal><command>t</command></literal></entry>
+	    <entry>lista el contenido de un paquete (o librería).</entry>
+	  </row>
+	  <row>
+	    <entry><literal><command>x</command></literal></entry>
+	    <entry>extrae un fichero de un paquete (o librería).</entry>
+	  </row>
+	  </tbody>
+	</tgroup>
+      </table>
+
+    </section>
+
+    <section>
+      <title>Uso de una librería estática</title>
+      <para>
+	Para utilizar las funciones y símbolos contenidos en una
+	librería estática es necesario enlazar dichos símbolos cuando
+	se monta un ejecutable. Para ello, debemos indicar al
+	compilador qué librerías queremos utilizar y el lugar donde se
+	encuentran.
+      </para>
+      
+      <para>
+	Si hemos escrito un programa <filename>apli1.c</filename> que
+	hace uso de la librería que hemos creado en el punto anterior
+	y queremos compilarlo debemos hacer lo siguiente:
+      </para>
+
+      <para>
+	Primero compilamos el programa:
+      </para>
+
+      <para>
+	<screen>
+   $ gcc -c -o apli1.o apli1.c
+	</screen>
+      </para>
+
+      <para>
+	teniendo presente que en la compilación deben estar en ruta los
+	ficheros de interfaz (.h) de la librería. De no ser así debe indicarse
+	al compilador donde se encuentran dichos ficheros mediante la
+	opción <option>-I</option>, algo como:
+      </para>
+
+      <para>
+	<screen>
+   $ gcc -c -o apli1.o apli1.c -Idir_lib
+	</screen>
+      </para>
+
+	
+      <para>
+	Después se monta el programa con la librería indicando donde
+	está y cual es su nombre:
+      </para>
+
+      <para>
+	<screen>
+   $ gcc -o apli1 apli1.o -Ldir_lib -lfich
+	</screen>
+      </para>
+
+      <para>
+	Consideraciones:
+      </para>
+
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    En el ejemplo se supone que la librería y su fichero de interfaz se
+	    encuentran en un directorio llamado <filename>dir_lib</filename>.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    La opción <option>-I</option> se usa para indicar
+	    donde se encuentran ficheros de interfaz.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    La opción <option>-L</option> sirve para indicar el
+	    directorio donde se encuentra la librería.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    La opción <option>-l</option> es para indicar los
+	    nombres de la librerías que se van a usar, pero no debe
+	    escribirse ni el prefijo <filename>lib</filename> ni la
+	    extensión <filename>.a</filename> ya que el compilador
+	    espera que se sigan las normas de nombrado anteriormente
+	    citadas.
+	  </para>
+	</listitem>
+      </itemizedlist>
+
+      <para>
+	A continuación se muestra un fichero
+	<filename>makefile</filename> que permite automatizar todo el
+	proceso, tanto la creación de la librería como del
+	programa. En este caso se supone que todos los ficheros
+	necesarios se encuentran en el directorio actual.
+      </para>
+
+      <para>
+	<programlisting FORMAT="LINESPECIFIC">
+   CC=gcc
+   CFLAGS=-Wall -ggdb -I./
+   LDFLAGS=-L./
+   LDLIBS=-lfich
+
+   all: libfich.a apli1
+
+   apli1: apli1.o
+
+   libfich.a: fich1.o fich2.o
+      $(AR) rcs $@ $^
+	</programlisting>
+      </para>
+    </section>
+  </section>
+
+  <section>
+    <title>Librerías dinámicas</title>
+
+    <para>
+      La utilización de objetos dinámicos supone dejar pendiente en el
+      montaje de la aplicación el enlace de dichos objetos. Cuando la
+      aplicación está en ejecución, y sólo entonces, se produce el
+      enlace (<emphasis>dinamic binding</emphasis>) con los objetos
+      contenidos en la librería.
+    </para>
+
+    <para>
+      La creación de librerías dinámicas corre a cargo del enlazador o
+      montador (en nuestro caso el <command>ld</command>) aunque
+      también es posible indicar al compilador las opciones necesarias
+      para el montaje y de ese modo, será él quien se encargue de
+      pasarselas al montador.
+    </para>
+
+    <section>
+      <title>Creación de una librería dinámica</title>
+      <para>
+	Cuando se crea un objeto dinámico es necesario que dicho
+	código objeto sea independiente de la posición, para conseguir
+	este tipo de código debe especificarse al compilador la opción
+	<option>-fPIC</option> (Position Independent Code). Dicho
+	flag debe indicarse tanto en la compilación como en el montaje
+	de la librería.
+      </para>
+
+      <para>
+	<screen>
+   $ gcc -fPIC -c -o fich1.o fich1.c
+   $ gcc -fPIC -c -o fich2.o fich2.c
+	</screen>
+      </para>
+
+      <para>
+	Para montar los objetos es necesario además indicar la opción
+	<option>-shared</option> para que el resultado sea un
+	fichero objeto 'compartible'.
+      </para>
+
+      <para>
+	<screen>
+   $ gcc -shared -fPIC -o libfich.so fich1.o fich2.o
+	</screen>
+      </para>
+
+      <para>
+	Para compilar la librería dinámica puede utilizarse un
+	makefile como este:
+      </para>
+
+      <para>
+	<programlisting FORMAT="LINESPECIFIC">
+   CC=gcc
+   CFLAGS=-Wall -ggdb -fPIC
+   LDFLAGS=-fPIC -shared
+
+   libfich.so: fich1.o fich2.o
+      $(CC) $(LDFLAGS) -o $@ $^
+	</programlisting>
+      </para>
+
+      <para>
+	En este caso, la librería tiene como extensión
+	<filename>.so</filename> que significa <emphasis>shared
+	object</emphasis>. 
+      </para>
+    </section>
+
+    <section>
+      <title>Uso de una librería dinámica</title>
+      <para>
+	Para utilizar esta librería desde un programa no hay que hacer
+	nada adicional; es exactamente igual que en el caso de la
+	librería estática.
+      </para>
+
+      <para>
+	Al hacer uso de una librería, el compilador busca primero una
+	versión dinámica (<filename>.so</filename>), si no la encuentra
+	entonces busca la versión estática. Si se tienen las dos versiones de
+	una librería y se quiere utilizar la versión estática debe
+	indicarse al montador el flag <option>-static</option>.
+      </para>
+
+      <para>
+	Cuando un programa utiliza librerías dinámicas, el asistema necesita
+	localizarlas en tiempo de ejecución (al contrario que con las
+	librerías estáticas). Los lugares donde un programa busca las
+	librerías dinámicas son los siguientes (en este orden):
+	
+      </para>
+
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    En los directorios de la variable
+	    <literal>LD_LIBRARY_PATH</literal>.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    En el fichero <filename>ld.so.cache</filename>.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    En los directorios <filename>/usr/lib</filename> y
+	    <filename>/lib</filename>.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    En los directorios contenidos en el fichero
+	    <filename>ld.so.conf</filename>.
+	  </para>
+	</listitem>
+      </itemizedlist>
+
+      <para>
+	Si el programa no encuentra la librería que necesita imprimirá
+	un mensaje de error con el siguiente aspecto:
+      </para>
+
+      <screen>
+   $ ./apli1 
+   apli1: error in loading shared libraries: libfich.so: cannot open shared object file: No such file or directory
+      </screen>
+
+      <para>
+	Normalmente, lo más adecuado, es utilizar la variable de
+	entorno <constant>LD_LIBRARY_PATH</constant> para indicar en qué
+	directorios debe buscar:
+      </para>
+
+      <para>
+	<screen>
+   $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/user/dir_lib
+	</screen>
+      </para>
+
+      <para>
+	De este modo debe funcionar correctamente.
+      </para>
+    </section>
+
+    <section>
+      <title>Versión de una librería dinámica</title>
+      <para>
+	Una de las grandes ventajas del uso de librerías dinámicas, a
+	parte de tener ficheros ejecutables más pequeños, es que podemos
+	modificar la implementación de las librerías sin tener que recompilar
+	los programas.
+      </para>
+
+      <para>
+	Para diferenciar las librerías que han sufrido modificaciones
+	se utilizan los números de versión que tienen el siguiente
+	significado (si se tiene una librería
+	<filename>libejemplo.so.x.y.z</filename>  siendo x, y, z números de versión):
+      </para>
+
+    <table frame=none> <title></title>
+       <tgroup cols=2 align=left rowsep=30>
+	<colspec colwidth=1cm>
+
+	<tbody>
+	  <row>
+	    <entry><literal><command>x</command></literal></entry>
+	    <entry>(major number) permite saber que todas las versiones con el mismo valor para este número son compatibles.</entry>
+	  </row>
+	  <row>
+	    <entry><literal><command>y</command></literal></entry>
+	    <entry>(release) Cambia cuando se hace alguna modificación que afecta al interfaz de la librería.</entry>
+	  </row>
+	  <row>
+	    <entry><literal><command>z</command></literal></entry>
+	    <entry>(epoch) Cambia cuando se arregla algún error o cambia alguna
+      característica interna de la librería.</entry>
+	  </row>	  
+	</tbody>
+      </tgroup>
+     </table>
+
+      <para>
+	Para que los números de versión no sean sólo el nombre del
+	fichero de la librería sino que las utilidades del sistema puedan
+	gestionar dicha información es necesario indicar al enlazador el
+	nombre y versión de la librería para que lo incluya en el interior del
+	archivo <filename>.so</filename>.
+      </para>
+
+      <para>
+	Para que los números de versión no sean sólo el nombre del
+	fichero de la librería sino que las utilidades del sistema
+	puedan gestionar dicha información es necesario indicar al
+	enlazador el nombre y versión de la librería para que lo
+	incluya en el interior del archivo <filename>.so</filename>.
+      </para>
+	
+      <para>
+	Para pasar valores al enlazador desde el compilador se utiliza
+	el flag <option>-Wl</option> escribiendo a continuación las
+	opciones que queremos pasar al enlazador separadas por comas
+	en lugar de por espacios. Veamos cómo crear la librería
+	libfich.so del ejemplo anterior de manera que sea la versión <filename>libfich.so.1.0.0</filename>.
+      </para>
+
+      <para>
+	<screen>
+   $ gcc -Wl,-soname,libfich.so.1.0.0 -shared -fPIC -o libfich.so.1.0.0 fich1.o fich2.o
+	</screen>
+      </para>
+
+      <para>
+	Con un makefile sería:
+	<programlisting FORMAT="LINESPECIFIC">
+   CC=gcc
+   CFLAGS=-Wall -ggdb -fPIC
+   LDFLAGS=-fPIC -shared
+   libfich.so.1.0.0: fich1.o fich2.o
+      $(CC) -Wl,-soname,$@ $(LDFLAGS) -o $@ $^
+	</programlisting>
+      </para>
+
+      <para>
+	El problema de utilizar estos nombres es que cuando se compila
+	un programa que utiliza una librería dinámica el compilador
+	busca un fichero con extensión .so simplemente. Para
+	solucionar esto, basta con crear un enlace simbólico con el
+	nombre que el compilador está buscando, es decir:
+      </para>
+
+      <para>
+	<screen>
+   $ ln -s libfich.so.1.0.0 libfich.so
+	</screen>
+      </para>
+
+      <para>
+	Si compilamos un programa con una librería para la que se ha
+	especificado un soname con los 3 números, el programa sólo
+	funcionará si encuentra exactamente esa versión. Sin embargo
+	podemos especificar un soname más genérico incluyendo sólo 1 o
+	2 de los números de versión.
+      </para>
+
+      <para>
+	De este modo el programa funcionará sin recompilar con
+	cualquiera de las versiones de la librería con tal que
+	coincida el soname con el que fue compilado. Este sistema
+	permite cambiar a versiones más recientes de las librerías de
+	una forma limpia y rápida. El inconveniente es que necesitamos
+	nuevos enlaces simbólicos pues el programa en ejecución
+	buscará una librería con el soname con el que fue
+	compilado. Veamos un ejemplo:
+      </para>
+
+      <para>
+	<screen>
+   $ gcc -Wl,-soname,liba.so.1.0 -shared -fPIC -o liba.so.1.0.0 a.o
+	</screen>
+      </para>
+
+      <para>
+	Hemos creado una librería con nombre
+	<filename>liba.so.1.0.0</filename> y
+	<emphasis>soname</emphasis> <filename>liba.1.0</filename> a
+	partir del objeto <filename>a.o</filename>. Para compilar un
+	programa con esta librería debe existir un enlace
+	<filename>liba.so</filename> que apunte a
+	<filename>liba.so.1.0.0</filename> después ya podemos compilar
+	el programa.  Sería algo como:
+      </para>
+
+      <para>
+	<screen>
+   $ ln -s liba.so.1.0.0 liba.so
+   $ gcc -o apli2 apli2.o -L. -la
+	</screen>
+      </para>
+
+      <para>
+	Pero cuando intentamos ejecutar la aplicación obtenemos el
+	siguiente error:
+	<screen>
+   $ ./apli2
+   apli2: error in loading shared libraries: liba.so.1.0: cannot open shared object file: No such file or directory
+	</screen>
+      </para>
+
+      <para>
+	Esto ocurre aunque el directorio esté en el
+	<constant>LD_LIBRARY_PATH</constant>. Para arreglarlo hay que
+	rear un enlace del siguiente modo:
+      </para>
+
+      <para>
+	<screen>
+   $ ln -s liba.so.1.0.0 liba.so.1.0
+	</screen>
+      </para>
+      
+      <section>
+	<title>Utilidad <command>ldd</command></title>
+	
+	<para>
+	  Podemos saber con que versión está compilado un programa por
+	  medio del programa ldd; Veamos como funciona:
+	  
+	  <screen>
+   $ ldd apli2
+   liba.so.1.0 => /home/user/liba.so.1.0 (0x40023000)
+   libc.so.6 => /lib/libc.so.6 (0x40025000)
+   libdl.so.2 => /lib/libdl.so.2 (0x4010d000)
+   /lib/ld-linux.so.2 => /lib/ld-linux.so.2 (0x40000000)
+	  </screen>
+	</para>
+	
+	<para>
+	  Si ahora modificamos la librería y creamos una nueva versión
+	  llamada <filename>liba.so.1.0.2</filename> pero antenemos el
+	  <emphasis>soname</emphasis> <filename>liba.so.1.0</filename> la
+	  aplicación seguirá funcionando sin más que cambiar el nlace
+	  simbólico para que apunte a la nueva librería.
+	</para>
+      </section>
+      
+      
+      <section>
+	<title>Utilidad <command>ldconfig</command></title>
+	
+	<para>
+	  Como el asunto de los enlaces puede llegar a ser muy tedioso
+	  existe una utilidad llamada dconfig que hace todo esto por nosotros.
+	  Como siempre, veamos como automatizar todo con un makefile:
+	</para>
+
+	<para>	
+	  <programlisting FORMAT="LINESPECIFIC">
+   CC=gcc 
+   CFLAGS=-Wall -ggdb -fPIC
+   LDFLAGS=-fPIC -shared
+   NOMBRE_LIB=liba.so.1.0.0
+   SONAME=liba.so.1.0
+   $(NOMBRE_LIB): a.o
+      $(CC) -Wl,-soname,$(SONAME) $(LDFLAGS) -o $@ $^
+      ln -s $(NOMBRE_LIB) liba.so
+      ldconfig -vn ./
+
+   clean:
+      $(RM) *.o core liba.so*
+	  </programlisting>
+	</para>
+      </section>
+    </section>
+  </section>
+
+  <section>
+    <title>Enlace dinámico en tiempo de ejecución</title>
+
+    <para>
+      Cuando un programa se enlaza con una librería dinámica, este
+      obtiene información de como debe manipular los objetos que en
+      ella se encuentran para cuando llegue el momento de la
+      ejecución.
+    </para>
+    <para>
+      Existe otra posibilidad de utilizar el código que contiene una
+      librería dinámica. Este método permite definir la interfaz de
+      acceso a una librería y en tiempo de ejecución acceder a la librería
+      sin tener ningún conocimiento previo. Esta es la forma en la que
+      habitualmente se implementan los plugins.
+    </para>
+
+    <para>
+      El acceso se consigue por medio de las siguientes funciones:
+
+      <variablelist>
+	<varlistentry>
+	  <term>
+	    <funcsynopsis>
+	      <funcprototype><funcdef>void* <function>dlopen</function></funcdef>
+		<paramdef>
+		  <parameter>const char* nomfich,</parameter>
+		  <parameter>int indicador</parameter>
+		</paramdef>
+	      </funcprototype>
+	    </funcsynopsis>
+	  </term>
+	  <listitem>
+	    <para>
+	       Abre la librería dinámica nomfich (debe ser la ruta absoluta) y
+	      devuelve un manejador de la librería. El argumento indicador es
+	      el modo en que se cargará la librería.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <funcsynopsis>
+	      <funcprototype><funcdef>const char* <function>dlerror</function></funcdef>
+		<paramdef>
+		  <parameter>void</parameter>
+		</paramdef>
+	      </funcprototype>
+	    </funcsynopsis>
+	  </term>
+	  <listitem>
+	    <para>
+	      Devuelve una cadena con la descripción del último error ocurrido.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <funcsynopsis>
+	      <funcprototype><funcdef>void* <function>dlsym</function></funcdef>
+		<paramdef>
+		  <parameter>void* manejador,</parameter>
+		  <parameter>char* símbolo</parameter>
+		</paramdef>
+	      </funcprototype>
+	    </funcsynopsis>
+	  </term>
+	  <listitem>
+	    <para> 
+	      Devuelve la dirección del símbolo cuyo nombre corresponde con el
+	      argumento simbolo ubicado en la librería referenciado por
+	      manejador, que es un valor devuelto <function>dlopen()</function>.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <funcsynopsis>
+	      <funcprototype><funcdef>int <function>dlclose</function></funcdef>
+		<paramdef>
+		  <parameter>void* manejador</parameter>
+		</paramdef>
+	      </funcprototype>
+	    </funcsynopsis>
+	  </term>
+	  <listitem>
+	    <para>
+	       Descarga la librería dinámica referenciada por medio de
+	      manejador.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </para>
+
+    <section>
+      <title>Ejemplo de enlace dinámico</title>
+
+      <para>
+	Disponemos de una librería dinámica llamada
+	<filename>libhola.so</filename> compilada a partir del
+	siguiente código:
+      </para>
+
+      <para>
+	<programlisting FORMAT="LINESPECIFIC">
+#include &lt;stdio.h&gt;
+void rehola(int i)
+{
+   printf("Hola mundo por %d vez.\n", i);
+}
+	  </programlisting>
+      </para>
+
+      <para>
+	Y tenemos un fichero con el siguiente código llamado <filename>apli3.c</filename>:
+	<programlisting FORMAT="LINESPECIFIC">
+#include &lt;stdio.h&gt;
+#include &lt;dlfcn.h&gt;
+#define RUTA_LIBHOLA "/home/user/libhola.so"
+int main(){
+   int i = 3;
+   void *pLibHola;                       /* manejador de la libreria libhola */
+   void (*pFuncion)(int);                /* símbolo que importamos de libhola */
+   if ((pLibHola = dlopen(RUTA_LIBHOLA, RTLD_LAZY)) ==NULL) {
+      fprintf(stderr, dlerror());
+      return 1;
+   }
+   if ((pFuncion = dlsym(pLibHola, "rehola")) == NULL) {
+      fprintf(stderr, dlerror());
+      return 1;
+   }
+   if ((pFuncion = dlsym(pLibHola, "rehola")) == NULL) {
+      fprintf(stderr, dlerror());
+      return 1;
+   }
+   pFuncion(i);
+   dlclose(pLibHola);
+   return(0);
+}
+	</programlisting>
+      </para>
+
+      <para>
+	Este código se compila simplemente con:
+	<screen>
+   $ gcc -o apli3 apli3.c -ldl
+	</screen>
+      </para>
+      
+      <para>
+	La opción <option>-ldl</option> es necesaria para poder
+	utilizar la librería <filename>libdl.so</filename> que es la
+	encargada de implementar los enlaces dinámicos, pero en ningún
+	momento se han hecho referencias a la librería libhola, sólo
+	al lugar donde se encuentra.
+      </para>
+      
+      <para>
+	Si ejecutamos el programa vemos lo siguiente:
+	<screen>
+   $ ./apli3
+   Hola mundo por 3 vez.
+	</screen>
+      </para>
+    </section>
+  </section>
+
+  <section>
+    <title>Precarga de símbolos</title>
+
+    <para>
+      Esta es otra posibilidad más para utilizar código externo de
+      forma dinámica. Consiste en cargar una librería dinámica antes
+      de un programa. Dicha librería dinámica contendrá símbolos
+      referenciados por el programa.
+    </para>
+
+    <para>
+      Supongamos que un programa <filename>apli4</filename> hace uso
+      del símbolo <function>FuncionG</function> que se encuentra en la
+      librería dinámica <filename>libDinamica.soc</filename>. Pues
+      bien, podemos escribir una librería diferente libOtra.so que
+      implemente la <function>FuncionG</function> a condición de que
+      cumpla su prototipo, pero cuya funcionalidad puede ser
+      completamente distinta. Después, con este método, se puede hacer
+      que el programa utilice el símbolo que hay en nuestra librería
+      en lugar del que hay en la librería <filename>libDinamica.so</filename>.
+    </para>
+
+    <para>
+      Hay dos formas para conseguir dicho comportamiento:
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    Utilizar la variable de entorno <constant>LD_PRELOAD</constant> de la siguiente
+	    manera:
+	  </para>
+	  <screen>
+	    $ LD_PRELOAD=/home/user/libOtra.so apli4
+	  </screen>
+	</listitem>
+	<listitem>
+	  <para>
+	    Por medio del fichero
+	    <filename>/etc/ld.so.preload</filename> que contendrá los
+	    nombres de las librerías cuyos símbolos se les dará
+	    prioridad en la carga.
+	  </para>
+	</listitem>
+      </itemizedlist>
+    </para>
+
+    <para>
+      En el documento <emphasis>Depuración Avanzada en
+      GNU/Linux</emphasis>, de esta misma serie de documentos,
+      aparecen varios ejemplos del uso de este método.
+    </para>
+  </section>
+
+  <bibliography id=refs>
+    <title>Referencias</title>
+    <biblioentry>
+      <abbrev>1</abbrev>
+      <publisher>
+	<publishername>Escuela Superior de Informática</publishername>
+      </publisher>
+	<title>Aplicaciones de desarrollo en GNU/Linux</title>
+      <date>2001</date>
+    </biblioentry>
+  </bibliography>
+
+-->
+
+</article>
+
+

@@ -3,10 +3,13 @@ STYLE_SHEET=/usr/share/sgml/docbook/stylesheet/dsssl/ldp/ldp.dsl
 JADE_FLAGS=-t sgml -i html
 
 $(PROY).html: $(PROY).sgml
-	jade -V nochunks $(JADE_FLAGS) -d $(STYLE_SHEET)\#html $< > $@
+	docbook2html -u $< 
 
-index.html: $(PROY).sgml
-	jade $(JADE_FLAGS) -d $(STYLE_SHEET)\#html $<
+# $(PROY).html: $(PROY).sgml
+# 	jade -V nochunks $(JADE_FLAGS) -d $(STYLE_SHEET)\#html $< > $@
+
+# index.html: $(PROY).sgml
+# 	jade $(JADE_FLAGS) -d $(STYLE_SHEET)\#html $<
 
 clean:
 	$(RM) $(PROY).pdf *~ *.html *.fot
